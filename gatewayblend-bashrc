@@ -1,0 +1,73 @@
+export EDITOR=/usr/bin/vim
+set -o vi
+for SUB in `grep ORIGIN ~/svn/dns/zones/ppcmedia.net.int.zone ~/svn/dns/zones/stl2.ppcmedia.net.int.zone ~/svn/dns/zones/bel1.ppcmedia.net.int.zone | awk -F: '{print $NF}' | grep -v ^\; | awk '{print $NF}' | sed 's/\.$//'`; do
+    for HOST in `sed -n "/\$ORIGIN $SUB/,/ORIGIN $SUB/p" ~/svn/dns/zones/ppcmedia.net.int.zone ~/svn/dns/zones/stl2.ppcmedia.net.int.zone ~/svn/dns/zones/bel1.ppcmedia.net.int.zone | grep -v ^\; | grep -v ORIGIN | grep -v ^$ | grep "IN \(A\|CNAME\)" | awk '{print $1}' | sort`; do
+        alias $HOST.$SUB="tabname $HOST.$SUB; ssh -i ~/.ssh/lko $HOST.$SUB; tabname $CURHOST"
+    done
+done
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+# Uncomment the following line if you don't like systemctl's auto-paging feature:
+# export SYSTEMD_PAGER=
+
+# User specific aliases and functions
+if [ -x /usr/games/cowsay -a -x /usr/games/fortune ]; then
+   fortune | cowsay -f $(ls /usr/share/cowsay/cows/ | shuf -n1)
+fi
+RESET="\[\017\]"
+NORMAL="\[\033[0m\]"
+RED="\[\033[31;1m\]"
+YELLOW="\[\033[33;1m\]"
+WHITE="\[\033[37;1m\]"
+SMILEY="${WHITE}:)${NORMAL}"
+FROWNY="${RED}:(${NORMAL}"
+SELECT="if [ \$? = 0 ]; then echo \"${SMILEY}\"; else echo \"${FROWNY}\"; fi"
+PS1="\A \u@\h\[$(tput sgr0)\]"
+# Throw it all together
+PS1="${RESET}${YELLOW}\h${NORMAL} \`${SELECT}\` ${YELLOW}>${NORMAL} "
+
+export EDITOR='vim'
+
+export PATH=$PATH:~/bin:~/svn/crypto/bin
+#export GOPATH=$HOME/go
+#export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+alias ls='ls -Gp'                # Preferred ‘ls’ implementation
+alias cp='cp -iv'                           # Preferred 'cp' implementation
+alias mv='mv -iv'                           # Preferred 'mv' implementation
+alias mkdir='mkdir -pv'                     # Preferred 'mkdir' implementation
+alias ll='ls -FGlAhp'                       # Preferred 'ls' implementation
+# alias less='less -FSRXc'                    # Preferred 'less' implementation
+cd() { builtin cd "$@"; ll; }               # Always list directory contents upon 'cd'
+alias cd..='cd ../'                         # Go back 1 directory level (for fast typers)
+alias ..='cd ../'                           # Go back 1 directory level
+alias ...='cd ../../'                       # Go back 2 directory levels
+alias .3='cd ../../../'                     # Go back 3 directory levels
+alias .4='cd ../../../../'                  # Go back 4 directory levels
+alias .5='cd ../../../../../'               # Go back 5 directory levels
+alias .6='cd ../../../../../../'            # Go back 6 directory levels
+# alias edit='subl'                           # edit:         Opens any file in sublime editor
+alias f='open -a Finder ./'                 # f:            Opens current directory in MacOS Finder
+alias ~="cd ~"                              # ~:            Go Home
+alias c='clear'                             # c:            Clear terminal display
+# alias which='type -all'                     # which:        Find executables
+alias path='echo -e ${PATH//:/\\n}'         # path:         Echo all executable Paths
+alias show_options='shopt'                  # Show_options: display bash options settings
+alias fix_stty='stty sane'                  # fix_stty:     Restore terminal settings when screwed up
+alias cic='set completion-ignore-case On'   # cic:          Make tab-completion case-insensitive
+mcd () { mkdir -p "$1" && cd "$1"; }        # mcd:          Makes new Dir and jumps inside
+trash () { command mv "$@" ~/.Trash ; }     # trash:        Moves a file to the MacOS trash
+ql () { qlmanage -p "$*" >& /dev/null; }    # ql:           Opens any file in MacOS Quicklook Preview
+alias DT='tee ~/Desktop/terminalOut.txt'    # DT:           Pipe content to file on MacOS Desktop
+
+ANSIBLE_HOME=~/stash/ansible/ansible_hosts
+export ANSIBLE_HOME
+CRYTPO=~/svn/crypto/bin/pwgrep
+export CRYTPO
+
+export HISTTIMEFORMAT="%h/%d -- %H:%M:%S "
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND ; }"'echo $$ $USER "$(history 1)" >> ~/.bash_eternal_history'
