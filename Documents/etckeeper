@@ -1,0 +1,67 @@
+1) Install etckeeper
+
+# sudo yum install etckeeper git
+
+2)  After the packages are installed, you can edit the /etc/etckeeper/etckeeper.conf file to define the “VCS” (Version Control System). By default, git is configured as the VCS. With the package from the repository, the configuration for the package manager is also already pre-configured.
+
+To get the /etc/ directory under version control, the next step is to initialize the repository for etckeeper. This is done by running etckeeper with the “init” argument.
+
+# cd /etc
+# etckeeper init
+Initialized empty Git repository in /etc/.git/
+
+3)  This will, as the output shows, initialise the git repository inside the /etc/ directory. To commit the initial version of all the configuration files, run the following command. The last parameter contains the git commit message (where you can include whatever description you like).
+
+# etckeeper commit "commit initial version of files"
+
+4)  Install package to test 
+
+sudo yum install htop
+
+5)  Add a remote git repository
+
+To keep a copy of the files etckeeper is managing in a remote location, you can add a remote repository to the local git repository. This is not done through etckeeper but through the following git command.
+
+Change to the /etc/ directory and execute the following command to add a remote to the git repository. The second command shows the remote has been added.
+
+$ git remote add origin ssh://git@repo.example.com:1234/etckeeper-repository-name.git
+$ git remote -v
+origin	ssh://git@repo.example.com:1234/etckeeper-repository-name.git (fetch)
+origin	ssh://git@repo.example.com:1234/etckeeper-repository-name.git (push)
+
+6)  As shown in the output above, the remote that was added is called “origin” as specified. etckeeper is able to push the changes to the remote every time something is committed. To let etckeeper know you want to do this, edit the etckeeper configuration file and define the remote name.
+
+$ vim /etc/etckeeper/etckeeper.conf
+
+Change the setting shown below to the name of the remote you specified when adding the remote.
+
+PUSH_REMOTE="origin"
+
+
+7) Manually committing changes
+
+When you change the configuration files in /etc/ manually, there is no hook that triggers eckeeper to handle the changed files. In this case you need to execute etckeeper manually. With the following command it is possible to check if there are uncommitted changes in the git repository.
+
+$ etckeeper vcs status
+# On branch master
+# Changed but not updated:
+#   (use "git add ..." to update what will be committed)
+#   (use "git checkout -- ..." to discard changes in working directory)
+#
+# modified:   ssh/sshd_config
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+
+8)  If you have uncommitted changes, the following command can be executed to commit them into the repository.
+
+$ etckeeper commit "updated sshd config"
+[master 438c43a] updated sshd config
+Author: username <username@example.com>
+1 files changed, 1 insertions(+), 0 deletions(-)
+Counting objects: 7, done.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 366 bytes, done.
+Total 4 (delta 3), reused 0 (delta 0)
+To ssh://git@repo.example.com:1234/etckeeper-repository-name.git
+9ab4abc..438c43a  master -> master
+

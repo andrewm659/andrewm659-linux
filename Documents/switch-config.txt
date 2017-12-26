@@ -1,0 +1,239 @@
+
+! Embedded ASCII Configuration Generator Script
+! Model = Ethernet Routing Switch 5510-48T
+! Software version = v6.3.4.028
+!
+! Displaying only parameters different to default
+!================================================
+enable
+configure terminal
+!
+! *** CORE ***
+!
+sntp server primary address 10.150.1.60
+sntp server secondary address 129.6.15.28
+sntp enable
+radius server host timeout 30 
+
+telnet-access login-timeout 10
+!
+! *** SNMP ***
+!
+snmp-server host 10.150.1.62 "public"
+snmp-server host 10.150.1.67 "public"
+snmp-server host 10.150.1.68 "public"
+snmp-server notify-filter 0d6d51b805f6ade2 +org
+snmp-server host 10.150.1.67 port 162 v2c  "public" filter 0d6d51b805f6ade2
+!
+! *** IP  ***
+!
+ip address switch 0.0.0.0
+ip address source configured-address
+!
+! *** IP Manager ***
+!
+!
+! *** ASSET ID ***
+!
+!
+! *** IPFIX ***
+!
+!
+! *** System Logging ***
+!                                           
+!
+! *** STACK ***
+!
+!
+! *** Default Command Interface ***
+!
+!
+! *** Custom Banner ***
+!
+!
+! *** STP (Phase 1) ***
+!
+spanning-tree port-mode auto
+!
+! *** VLAN ***
+!
+vlan create 1001,1010,1100 type port 1
+vlan name 1001 "v1001-House"
+vlan name 1010 "v1010-Prod"
+vlan name 1100 "v1100-Guest"
+vlan ports 41-42 tagging tagAll 
+vlan configcontrol flexible                 
+vlan members 1 NONE
+vlan members 1001 1-34,36-48
+vlan members 1010 35,41-42
+vlan members 1100 41-42
+vlan ports 1-34 pvid 1001
+vlan ports 35 pvid 1010
+vlan ports 36-48 pvid 1001
+vlan configcontrol strict
+!
+! *** EAP ***
+!
+!
+! *** EAP Guest VLAN ***
+!
+!
+! *** EAP Fail Open VLAN ***
+!
+!
+! *** EAP Voip VLAN ***
+!
+!
+! *** 802.1ab ***                           
+!
+
+!
+! *** 802.1ab vendor-specific Avaya TLVs config ***
+!
+!
+! *** 802.1AB MED Voice Network Policies ***
+!
+!
+! *** QOS ***
+!
+!
+! *** RMON ***
+!
+!
+! *** Interface ***
+!
+!
+! *** Rate-Limit ***
+!
+!
+! *** MLT (Phase 1) ***                     
+!
+!
+! *** MAC-Based Security ***
+!
+!
+! *** LACP ***
+!
+!
+! *** ADAC ***
+!
+!
+! *** STP (Phase 2) ***
+!
+!
+! *** Port Mirroring ***
+!
+!
+! *** VLAN Phase 2***
+!
+!
+! *** MLT (Phase 2) ***
+!                                           
+!
+! *** PoE ***
+!
+!
+! *** RTC ***
+!
+!
+! *** Avaya Energy Saver ***
+!
+!
+! *** AUR ***
+!
+!
+! *** AAUR ***
+!
+!
+! *** L3 ***
+!
+!
+ip routing
+!
+interface vlan 1001                         
+ip address 10.150.1.2 255.255.255.0 5
+exit
+interface vlan 1010
+ip address 10.150.10.1 255.255.255.0 3
+exit
+interface vlan 1100
+ip address 10.150.100.1 255.255.255.0 4
+exit
+
+! --- ECMP ---
+
+
+! No license for ECMP.
+ip route 0.0.0.0 0.0.0.0 10.150.1.1 1
+!
+! *** Brouter Port ***
+!
+!
+! *** IPV6 ***
+!
+!                                           
+! *** VLACP ***
+!
+!
+! *** DHCP Relay ***
+!
+!
+! *** L3 Protocols ***
+!
+
+! --- IP Directed Broadcast ---
+
+
+! --- Proxy ARP ---
+
+
+! --- UDP Broadcast Forwarding --- 
+
+
+! --- VRRP ---
+
+
+! --- Route Policies ---                    
+
+
+! --- OSPF ---
+
+router ospf
+router-id 6.136.116.0
+exit
+
+! --- RIP ---
+
+!
+! *** DHCP SNOOPING ***
+!
+!
+! *** ARP INSPECTION ***
+!
+!
+! *** IP SOURCE GUARD ***
+!
+!
+! *** IGMP ***
+!                                           
+!
+! *** STACK MONITOR ***
+!
+!
+! *** SMLT ***
+!
+!
+! *** SLPP ***
+!
+!
+! *** SLPP-guard ***
+!
+!
+! *** PIM ***
+!
+!
+! *** UNICAST STORM CONTROL ***
+!
+!
+! *** SLAMON ***
+

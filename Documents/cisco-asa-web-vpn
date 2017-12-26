@@ -1,0 +1,41 @@
+1) Generate a new SSH key
+crypto key generate rsa label asm-asa-rsa modulus 2048
+
+2) Create your local pki
+
+crypto ca trustpoint my-asm-ca
+enrollment self
+subject-name ca=ASM
+keypair asm-asa-rsa
+
+crypto ca enroll my-asm-ca
+
+3) Add/Create username
+
+4) Configure WebVPN
+
+grant them remote access
+
+ASA(config)#username userA attributes
+ASA(config-username)# service-type remote-acces
+
+a)  Create VPN network and add NAT statement
+
+object network ASM-VPN
+ subnet 10.150.254.0 255.255.255.0
+
+nat (inside,outside) source static ASM ASM destination static ASM-VPN ASM-VPN
+
+b) Create VPN IP Pool
+
+ip local pool ippool 10.150.254.1-10.150.254.254 mask 255.255.255.0
+
+c)  Create VPN Group Policy
+
+ASA(config)# group-policy SSLCLientPolicy internal
+ASA(config)# group-policy SSLCLientPolicy attributes
+ASA(config-group-policy)# dns-server value 192.168.5.100
+ASA(config-group-policy)# address-pools value SSLClientPool
+ASA(config-group-policy)# webvpn
+ASA(config-group-webvpn))#vpn-tunnel-protoco
+

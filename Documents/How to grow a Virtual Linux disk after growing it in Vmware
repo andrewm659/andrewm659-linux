@@ -1,0 +1,27 @@
+How to grow a Virtual Linux disk after growing it in Vmware
+
+https://theducks.org/2009/11/expanding-lvm-partitions-in-vmware-on-the-fly/
+https://sysadminblog.net/2013/08/vmware-esx-vsphere-resize-disk-linux/
+https://lonesysadmin.net/2009/01/02/how-to-grow-linux-virtual-disks-in-vmware/
+https://serverfault.com/questions/378086/how-to-extend-a-linux-pv-partition-online-after-virtual-disk-growth
+https://oracle-base.com/articles/vm/virtualbox-extend-disk-and-file-system
+https://serverfault.com/questions/509468/how-to-extend-an-ext4-partition-and-filesystem
+https://thewiringcloset.wordpress.com/2013/01/09/extending-a-root-filesystem-in-linux-without-lvm/
+https://mariusvw.com/2017/03/01/how-to-resizegrow-a-vmware-or-virtualbox-disk/
+
+
+1)   Take not of the cyclinders/heads/sectors prior to expansion
+
+# sudo fdisk /dev/sda
+
+2) Expand the disk in vmware
+
+3)  Log into the Linux server
+
+# for i in `ls /sys/class/scsi_host/`; do echo Scanning $i; echo "- - -" > /sys/class/scsi_host/$i/scan; done
+
+4) Rerun the fdisk
+
+# sudo fdisk -l /dev/sda
+
+5)

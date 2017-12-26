@@ -1,0 +1,36 @@
+http://www.instructables.com/id/Raspberry-Pi-remote-webcam/?ALLSTEPS
+http://www.instructables.com/id/Raspberry-Pi-as-low-cost-HD-surveillance-camera/?ALLSTEPS
+http://www.codeproject.com/Articles/762494/Raspberry-Pi-HD-surveillance-camera-with-motion-ni
+http://pimylifeup.com/raspberry-pi-webcam-server/
+http://pimylifeup.com/raspberry-pi-security-camera/
+
+https://www.reddit.com/r/raspberry_pi/comments/38vydw/raspberry_pi_2_surveillance_camera_system/
+
+
+How to Install Motion on RaspberryPi
+
+1)  Make sure you system is up to date
+
+sudo apt-get update && sudo apt-get upgrade
+
+2) Install Motion 
+
+Install the webcam server software using the following command:
+# sudo apt-get install motion vim postfix lsof 
+
+3)  Next we need to edit some of the config files so that the motion service will start on run up and be available on local network.
+
+First we will edit the motion.conf file by typing:
+# sudo vim /etc/motion/motion.conf
+
+start_motion_daemon=yes
+
+daemon: set to ON to start motion as a daemon service when pi boots,
+webcam_localhost: set to OFF so that you can access motion from other computers,
+stream_port: the port for the video stream (default 8081),
+control_localhost: set to OFF to be able to update parameters remotely via the web config interface,
+control_port: the port that you will access the web config interface (default 8080),
+framerate: number of frames per second to be captured by the webcam. Warning: setting above 5 fps will hammer your pi’s performance!
+post_capture: specify the number of frames to be captured after motion has been detected.
+
+

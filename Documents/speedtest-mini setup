@@ -1,0 +1,131 @@
+Setup Your Own “Speedtest Mini Server” to Test Internet Bandwidth Speed
+
+
+Overwhelmed with the response we got on the previous article on how to test the bandwidth speed using command line tool speedtest-cli.py, this tutorial aims at providing you with the knowledge of setting your own speedtest mini server in 10 minutes.
+
+    Check Your Internet Speed from Command Line Using ‘Speedtest-CLI’ Tool
+
+Speedtest.net mini is a speed testing application which is used for hosting speed test server (Mini) on your own site/server. Another application from NetGuage serves the same purpose which primarily is designed for Corporate sites.
+
+Speedtest.net Mini is available for free and it’s compatible with all major web servers. It measure ping by sending HTTP request to selected server and measures the time till it get response. For checking upload and download speed, it uploads and downloads small binary files from web server to client and vice-versa for upload.
+
+Note: Speedtest Mini server may not be used for commercial use, nor on any commercial sites.
+Install Speedtest Mini Server on Linux
+
+Download speedtest Mini Server from the link below. You need to Login before you can download. If you don’t have an account, register first.
+
+    http://www.speedtest.net/mini.php
+
+Once downloaded mini.zip file, you need to unzip the archive file.
+
+# Unzip mini.zip
+
+Now you need to determine on which server you want to host the application. You can choose any of the following as your hosting server – PHP, ASP, ASP.NET and JSP. Here we will be using PHP and Apache as Server to host.
+
+Let’s install Apache, PHP and all needed PHP modules using the following commands.
+On Debian/Ubuntu/Mint
+
+# apt-get install apache2
+# apt-get install php5 php5-mysql php5-mcrypt php5-gd libapache2-mod-php5
+
+On RedHat/CentOS/Fedora
+
+# yum install httpd
+# yum install php php-mysql php-pdo php-gd php-mbstring
+
+On FreeBSD
+
+# sudo pkg install php56 php56-mysql php56-pdo php56-gd php56-mbstring apache24
+
+After installing Apache and PHP with all required modules, restart the Apache service as shown below.
+
+# service apache2 restart		[On Debian/Ubuntu/Mint]
+# service httpd restart			[On RedHat/CentOS/Fedora]
+# systemct1 restart httpd		[On RHEL/CentOS 7.x and Fedora 21]
+# sudo service apache24 onerestart [On FreeBSD]
+
+Next, create a phpinfo.php file under Apache default directory, that we will use to check if PHP is rendering correctly or not.
+
+# echo "<?php phpinfo(); ?>" > /var/www/phpinfo.php         [On Debian/Ubuntu/Mint]
+
+# echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php [On RedHat/CentOS/Fedora]
+
+# echo "<?php phpinfo(); ?>" > /usr/local/www/apache24/data/ [On FreeBSD]
+
+Note: The default Apache root directory may be /var/www/ or /var/www/html/, please check the path before moving forward…
+
+Now we will be uploading the extracted folder mini to the Apache default directory location.
+
+# cp -R /[location to extracted folder]/mini /var/www/       [On Debian/Ubuntu/Mint]
+
+# cp -R /[location to extracted folder]/mini /var/www/html   [On RedHat/CentOS/Fedora]
+
+# cp -R /root/mini /usr/local/www/apache24/data/			 [On FreeBSD]
+
+We need to rename a file hence Long list the contents of directory that was uploaded to the Apache directory /var/www/ or /var/www/html.
+
+# ls -l /var/www/mini
+OR
+# ls -l /var/www/html/mini
+OR
+# ls -l /usr/local/www/apache24/data/mini
+
+Contents of Mini Server
+
+Now rename index-php.html to index.html only and leave other files untouched.
+
+# cd /var/www/
+OR
+# cd /var/www/html/
+# mv mini/index-php.html mini/index.html
+
+Rename Index File
+
+Rename Index File
+
+Note: If you’re using any other platform as your host, you need to rename respective file as shown below.
+
+    Rename index-aspx.html to index.html, if you are using ASP.NET as your host.
+    Rename index-jsp.html to index.html, if you are using JSP as your host.
+    Rename index-asp.html to index.html, if you are using ASP as your host.
+    Rename index-php.html to index.html, if you are using PHP as your host.
+
+Now point your web browser to your local server IP address, which typically in my case is:
+
+http://192.168.0.4/mini
+
+Speedtest Mini Server Testing
+
+Speedtest Mini Server Testing
+
+Click Begin test and it start testing the speed Locally.
+Test Internet Speed Locally
+
+Test Internet Speed Locally
+
+Now If you want to run the mini server over internet you need to forward your port in the firewall as well as in the router. You may like to refer to the below article to get a brief of how-to on the above topic.
+
+    Create Your Own Web Server to Host Website
+
+If everything goes fine you can check your bandwidth speed using mini server. But if the mini server and machine to be tested are on the same network you might need a proxy server like (kproxy.com), to test.
+Test Internet Speed on Same Network
+
+Test Internet Speed on Same Network
+
+Also you can check the speed of Internet connection on headless server or Linux command Line using speedtest-cli tool.
+
+# speedtest_cli.py --mini http://127.0.0.1/mini
+
+Check Internet Speed Using Speetest-Cli
+
+Check Internet Speed Using Speetest-Cli
+
+Note: If you are on different network, you are supposed to use public ip address in web browser as well as command-line.
+
+Furthermore, SYSAdmins can schedule the speedtest to run periodically in production, after setting up mini server.
+Conclusion
+
+The setup is too easy and took me less than 10 minutes of time. You may setup your own speedtest server to check the connection speed of your own production server, it is fun.
+
+That’s all for Now. I’ll be coming up with another interesting article very soon. Till then stay tuned and connected to Tecmint. Don’t forget to provide us with your valuable feedback in the comments below. Like and share us and help us get spread.
+

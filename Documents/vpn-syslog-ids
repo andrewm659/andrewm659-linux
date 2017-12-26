@@ -1,0 +1,15 @@
+4|Jul 19 2017|03:44:35|113019|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Session disconnected. Session Type: IKE, Duration: 0h:01m:04s, Bytes xmt: 1426, Bytes rcv: 6014, Reason: Unknown
+5|Jul 19 2017|03:44:35|713050|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Connection terminated for peer administrator.  Reason: Peer Terminate  Remote Proxy N/A, Local Proxy N/A
+5|Jul 19 2017|03:44:35|713050|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Connection terminated for peer administrator.  Reason: Peer Terminate  Remote Proxy 10.251.251.1, Local Proxy 0.0.0.0
+5|Jul 19 2017|03:43:53|713120|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, PHASE 2 COMPLETED (msgid=9582172b)
+5|Jul 19 2017|03:43:53|713049|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Security negotiation complete for User (administrator)  Responder, Inbound SPI = 0x5eaf9318, Outbound SPI = 0x1817b0f3
+5|Jul 19 2017|03:43:53|713119|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, PHASE 1 COMPLETED
+6|Jul 19 2017|03:43:53|713228|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Assigned private IP address 10.251.251.1 to remote user
+6|Jul 19 2017|03:43:53|737006|||||IPAA: Local pool request succeeded for tunnel-group 'PSSVPN'
+5|Jul 19 2017|03:43:53|737003|||||IPAA: DHCP configured, no viable servers found for tunnel-group 'PSSVPN'
+6|Jul 19 2017|03:43:53|713184|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Client Type: WinNT  Client Application Version: 5.0.07.0440
+5|Jul 19 2017|03:43:53|713130|||||Group = PSSVPN, Username = administrator, IP = 68.184.14.217, Received unsupported transaction mode attribute: 5
+6|Jul 19 2017|03:43:53|113009|||||AAA retrieved default group policy (PSSVPN) for user = administrator
+6|Jul 19 2017|03:43:30|713172|||||Group = PSSVPN, IP = 68.184.14.217, Automatic NAT Detection Status:     Remote end   IS   behind a NAT device     This   end is NOT behind a NAT device
+
+

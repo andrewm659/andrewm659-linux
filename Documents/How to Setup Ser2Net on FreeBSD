@@ -1,0 +1,40 @@
+https://forums.freebsd.org/threads/35027/
+
+
+How to Setup Ser2Net on FreeBSD
+
+1) Install ser2net
+
+sudo pkg install ser2net 
+
+2)  Get a list of your USB devices
+
+usbconfig
+
+dmesg | tail -n 1
+
+Find what the actual device is listed as.
+# ls -l /dev/cuaU*
+crw-rw----  1 uucp  dialer    0, 116 Mar  2 18:54 /dev/cuaU0
+crw-rw----  1 uucp  dialer    0, 117 Mar  2 18:54 /dev/cuaU0.init
+crw-rw----  1 uucp  dialer    0, 118 Mar  2 18:54 /dev/cuaU0.lock
+In our example it's listed as /dev/cuaU0.
+
+
+3)  Copy the sample to the real config file
+
+sudo cp -v /usr/local/etc/ser2net.conf.sample /usr/local/etc/ser2net.conf
+
+4)  Change the ser2net config to appropriate device
+
+sudo vi /usr/local/etc/ser2net.conf
+
+5)  Start the service
+
+sudo service ser2net onestart
+
+6)  Make it permanent and start on boot
+
+sudo sysrc ser2net_enable="YES"
+
+

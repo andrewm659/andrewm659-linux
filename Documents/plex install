@@ -1,0 +1,4 @@
+sudo add-apt-repository ppa:plexapp/plexht
+sudo add-apt-repository ppa:pulse-eight/libcec
+sudo apt-get update
+sudo apt-get install plexhometheater

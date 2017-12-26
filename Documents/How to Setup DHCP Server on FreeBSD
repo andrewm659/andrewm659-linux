@@ -1,0 +1,113 @@
+https://techjourney.net/installing-and-configuring-dhcp-server-dhcpd-on-freebsd/
+
+How to Setup DHCP Server on FreeBSD
+
+1) Install DHCP package
+
+sudo pkg install isc-dhcp-server
+
+2)  Make DHCP server able to begin on boot
+
+sysrc dhcpd_enable="YES"
+sysrc dhcpd_flags="-q"
+sysrc dhcpd_conf="/usr/local/etc/dhcpd.conf"
+sysrc dhcpd_ifaces=""
+sysrc dhcpd_withumask="022"
+
+3)  Setup DHCP Server Config 
+
+sudo vi /usr/local/etc/dhcpd.conf
+
+ddns-update-style none;
+
+option domain-name "borg.local";
+option domain-name-servers 8.8.8.8, 8.8.4.4;
+
+default-lease-time 86400;
+max-lease-time 604800;
+
+authoritative;
+
+log-facility local7;
+
+subnet 10.150.1.0 netmask 255.255.255.0 {
+  range 10.150.1.100 10.150.1.199;
+  option routers 10.150.1.1;
+  option domain-name-servers 8.8.8.8, 8.8.4.4;
+  option broadcast-address 10.150.1.255;
+  option ntp-servers 10.150.1.60, 10.150.1.55;
+}
+
+host ASMPC01 {
+   hardware ethernet 8c:70:5a:54:d6:30;
+   fixed-address 10.150.1.125;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host ASMPC01-1 {
+   hardware ethernet d4:be:d9:33:08:01;
+   fixed-address 10.150.1.126;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host AndrewsiPad {
+   hardware ethernet 8c:7c:92:74:51:70;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host wolverine {
+   hardware ethernet 1c:75:08:75:bb:e9;
+   fixed-address 10.150.1.198;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host wolverine-wifi {
+   hardware ethernet 1c:65:9d:b2:ba:c0;
+   fixed-address 10.150.1.197;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host oneplus {
+   hardware ethernet c0:ee:fb:28:0c:9c;
+   fixed-address 10.150.1.196;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host bedrooom-tv {
+   hardware ethernet cc:95:d7:da:c7:92;
+   fixed-address 10.150.1.195;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host chromecast-og {
+   hardware ethernet 6C:ad:f8:1a:05:e8;
+   fixed-address 10.150.1.194;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+host asm-gs3 {
+   hardware ethernet 34:23:ba:a5:0f:c2;
+   fixed-address 10.150.1.193;
+   option domain-name "borg.local";
+   option domain-name-servers 10.150.1.60, 10.150.1.55;
+}
+
+#host raspi2-fbsd {
+#   hardware ethernet b8:27:eb:ab:e6:0f;
+#   fixed-address 10.150.1.192;
+#   option domain-name "borg.local";
+#   option domain-name-servers 10.150.1.60, 10.150.1.55;
+#}
+
+4)  Start isc-dhcp-server
+sudo service isc-dhcpd start
+
+

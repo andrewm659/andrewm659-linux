@@ -1,0 +1,61 @@
+crypto ikev1 policy 10
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 1
+ lifetime 86400
+
+crypto ikev2 policy 1
+ encryption aes-256 aes-192 aes
+ integrity sha256 sha md5
+ group 5 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 65000
+ encryption aes-256 aes-192 aes 3des des
+ integrity sha512 sha384 sha256 sha md5
+ group 2
+ prf sha
+ lifetime seconds 86400
+crypto ikev2 policy 65001
+ encryption aes 3des des
+ integrity sha md5
+ group 5 2 1
+ prf sha
+ lifetime seconds 86400
+
+
+group-policy ASM-VPN internal
+group-policy ASM-VPN attributes
+ wins-server value 10.150.1.55
+ dns-server value 10.150.1.60 10.150.1.55
+ vpn-tunnel-protocol ikev1 ikev2 ssl-client ssl-clientless
+ split-tunnel-policy tunnelspecified
+ split-tunnel-network-list value ACL_VPN_Client
+
+tunnel-group ASM-VPN type remote-access
+tunnel-group ASM-VPN general-attributes
+ address-pool asm-ippool
+
+tunnel-group ASM-VPN webvpn-attributes
+ authentication certificate
+
+
+isakmp policy 1
+authentication pre-share
+encryption aes-256
+hash sha
+group 2
+lifetime 86400
+isakmp enable outside
+
+
+tunnel-group ASM-VPN type remote-access
+tunnel-group ASM-VPN general-attributes
+ address-pool asm-ippool
+  
+ !AD is the authentication server in this setup.
+ authentication-server-group 
+ default-group-policy ASM-VPN
+tunnel-group ASM-VPN webvpn-attributes
+ authentication aaa

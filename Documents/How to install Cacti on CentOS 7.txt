@@ -1,0 +1,125 @@
+How to install Cacti on CentOS 7
+
+1)  Install Epel
+
+# sudo yum install epel-release -y
+
+2)  Install Supplementary packages (Apache, DB,..etc)
+
+# yum install httpd httpd-devel mariadb-server php-mysql php-pear php-common php-gd php-devel php php-mbstring php-cli php-snmp net-snmp-utils net-snmp-libs rrdtool-y 
+
+3) Start the Services and Enable them at boot time
+
+# sudo systemctl start httpd.service 
+
+systemctl start mariadb.service 
+
+systemctl start snmpd.service 
+
+systemctl enable httpd.service 
+
+systemctl enable mariadb.service 
+
+systemctl enable snmpd.service
+
+ 
+
+Step 5:  Setup MariaDB password for the root username
+
+mysqladmin -u root password access123 
+
+Step 6:  Create Cacti DB and create a cacti username
+
+mysql -u root -p 
+
+Password: <access123> 
+
+MariaDB [(none)]> create database cacti; 
+
+MariaDB [(none)]> GRANT ALL ON cacti.* TO cacti@localhost IDENTIFIED BY 'access123'; 
+
+MariaDB [(none)]> FLUSH privileges; 
+
+MariaDB [(none)]> quit; 
+
+Step 7:  Install Cacti from Epel Release
+
+ 
+yum install cacti –y 
+
+Step 8:  Import the tables into the Cacti DB
+
+mysql -u cacti -p cacti < /usr/share/doc/cacti-0.8.8h/cacti.sql  
+
+Step 9: Edit the Cacti DB Configuration
+
+ 
+vim /etc/cacti/db.php 
+
+$database_type = "mysql"; 
+
+$database_default = "cacti"; 
+
+$database_hostname = "localhost"; 
+
+$database_username = "cacti"; 
+
+$database_password = "access123"; 
+
+$database_port = "3306"; 
+
+$database_ssl = false; 
+
+Step 10: Configure HTTP Access
+
+vim /etc/httpd/conf.d/cacti.conf 
+
+ 
+
+<Directory /usr/share/cacti/> 
+
+<IfModule mod_authz_core.c> 
+
+# httpd 2.4 
+
+#Require host localhost 
+
+Require all granted 
+
+#Require host 192.168.1.0/24 
+
+</IfModule> 
+
+<IfModule !mod_authz_core.c> 
+
+# httpd 2.2 
+
+Order deny,allow 
+
+Deny from all 
+
+Allow from all 
+
+#Allow from 192.168.1.0/24 
+
+</IfModule> 
+
+</Directory> 
+
+Step 11:  Restart HTTPD process for the change to take effect
+
+systemctl restart httpd.service 
+
+Step 12:  Create the log file where the cacti will store and write it’s file
+
+mkdir -p /var/log/cacti 
+
+Step 13:  Create the Log File inside the above directory
+
+cd /var/log/cacti/ 
+
+touch cacti.log 
+
+Step 14:  Uncomment the Cron Job for the poller in the following file
+
+vim /etc/cron.d/cacti 

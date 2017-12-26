@@ -1,0 +1,107 @@
+How to Install Observium on FreeBSD
+
+1)  Install two requirements for logging in remotely to the VM.
+# sudo pkg install wget bash dash zsh sudo curl
+
+2) Install the needed packages for Observium.
+# sudo pkg install apache24 php56 php56-mysql php56-gd php56-posix php56-mcrypt pear-Benchmark net-snmp p5-Net-SNMP-Util fping mariadb55-client py27-mysql-connector-python2 rrdtool12 subversion jwhois ipmitool p5-GraphViz py27-pygraphviz ImageMagick7-nox11 libvirt py27-libvirt bind-tools observium
+
+4) Make the directories needed for an Observium Install.
+# sudo mkdir -p /opt/observium && cd /opt
+
+5) Download and untar Observium.
+# sudo wget http://www.observium.org/observium-community-latest.tar.gz
+# sudo tar zxvf observium-community-latest.tar.gz
+
+6) Remove the tar File.
+# sudo rm observium-community-latest.tar.gz
+
+8) Login to a MySQL Prompt and configure the database and grant the correct privileges.
+mysql -h 10.150.1.80 -u root -p **Note MySQL will prompt you for the root password set above**
+mysql> CREATE DATABASE observium DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+mysql> GRANT ALL PRIVILEGES ON observium.* TO observium@'%' IDENTIFIED BY 'Infotech5!';
+mysql> SET GLOBAL sql_mode='STRICT_TRANS_TABLES';
+mysql> SET sql_mode='NEW MODE';
+OR PER SESSION:
+mysql> SET SESSION sql_mode='NEW MODE';
+mysql> exit;
+
+9) Change Directory into the Observium Folder and copy the default config file to config.php in order to edit the file.
+a) Change directory and copy the file to live
+cd /opt/observium
+# sudo cp -v config.php.default config.php
+b)  Edit the config.php to work with your mysql/mariadb
+# sudo vim /opt/observium/config.php
+Change the following to suite your needs:
+// Database config ---  This MUST be configured
+$config['db_extension'] = 'mysqli';
+$config['db_host']      = 'localhost';
+$config['db_user']      = 'USERNAME';
+$config['db_pass']      = 'PASSWORD';
+$config['db_name']      = 'observium';
+
+10) Edit the config.php in an editor of your change and Change the db_user and db_pass fields.  The remaining fields can be left to edit later.
+    1.  MySQL Strict mode should be enabled, but as of version 5.7 it is enabled by default.  This is a step in the official documentation, but it is one we can skip.
+    2.  We run discovery.php script to setup the database schema.
+./discovery.php -u
+
+11) In FreeBSD the locations of fping and ping differ from that of where Observium expects them to be.  Lets override those values in the config but adding these two lines.
+# sudo vim /opt/observium/config.php
+$config[‘ping’] = “/usr/bin/ping”;
+$config[‘fping’] = “/usr/sbin/fping”;
+
+12) Create the RRD Directory and give apache rights to it.
+# sudo mkdir rrd
+# sudo chown www:www rrd
+
+14) Setup httpd.conf for use with Observium.  We assume only Observium will be run on this host.  Be sure to replace the Server in the ServerName line to be that of your fully qualified domain hostname.
+# sudo vim /etc/httpd/conf.d/observium.conf
+<VirtualHost *:80>
+DocumentRoot /opt/observium/html/
+ServerName observium.domain.com
+CustomLog /opt/observium/logs/access_log combined
+ErrorLog /opt/observium/logs/error_log
+<Directory “/opt/observium/html/">
+AllowOverride All
+Options FollowSymLinks MultiViews
+Require all granted
+</Directory>
+</VirtualHost>
+
+15) Create the logs directory and give apache rights.
+# sudo mkdir -p /opt/observium/logs
+# sudo chown www:www /opt/observium/logs
+
+16) Create your initial web login user as an admin.  We use user admin, password Changeme123 and level 10 which is admin.
+cd /opt/observium
+# sudo ./adduser.php admin Changeme123 10
+
+17) Add your first device.  Be sure that SNMP is enabled on the device and that you know the community.  For us we will use our Mikrotik Switch.
+# sudo ./add_device.php 10.150.1.1 public v2c
+
+18) Now that Observium knows about the host, lets discovery it and poll for the data off the switch.
+# sudo ./discovery.php -h all
+# sudo ./poller.php -h all
+
+19) Create a cron job to run discovery and polling on a regular interval.  A Note in the Observium documentation states.
+The below example includes a username, so will only work in /etc/crontab or /etc/cron.d/observium. It will NOT work in a user crontab edited with crontab -e without removing the username.
+
+So we create the cron file in /etc/cron.d/observium.
+# Run a complete discovery of all devices once every 6 hours
+33 */6 * * * root /opt/observium/discovery.php -h all >> /dev/null 2>&1
+# Run automated discovery of newly added devices every 5 minutes
+*/5 * * * * root /opt/observium/discovery.php -h new >> /dev/null 2>&1
+# Run multi threaded poller wrapper every 5 minutes
+*/5 * * * * root /opt/observium/poller-wrapper.py 8 >> /dev/null 2>&1
+# Run housekeeping script daily for syslog, event log and alert log
+13 5 * * * root /opt/observium/housekeeping.php -ysel
+# Run housekeeping script daily for rrds, ports, orphaned entries in the database and performance data
+47 4 * * * root /opt/observium/housekeeping.php -yrptb
+
+20) Reload cron.
+# sudo systemctl reload crond
+
+21) Set httpd to start on boot.
+# sudo sysrc apache24_enable=YES
+# sudo service apache24 start
+

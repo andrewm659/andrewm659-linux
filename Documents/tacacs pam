@@ -1,0 +1,85 @@
+thttps://dalikin.wordpress.com/2009/08/31/install-tacacs-server-integrated-with-ldap-system/
+https://yassine.tioual.com/index.php/2016/03/19/setting-up-tacacs-with-ldap-authentication/
+https://savedlog.com/linux/aaa-tacacs-with-freeipa/
+http://floriancrouzat.net/2015/03/cisco-aaa-using-tacacs-with-syslog-and-pam-support-for-centosredhat/
+http://www.shrubbery.net/tac_plus/PAM_guide.txt
+
+Setup TACACS+ to work with PAM
+
+1) Configure tac_plus. While there are many more configurations to be
+done to make tac_plus work as a whole, the pam specific configuration is
+as follows:
+
+      Edit the tac_plus conf file, and define your users as such:
+
+      user = <ldap user id> {
+        login = PAM
+        <other options>
+      }
+
+2) Define a pam stack for tac_plus.
+
+      cd /etc/pam.d
+
+      # sudo vi tac_plus
+
+My pam stack config is as follows:
+
+auth        required      pam_env.so
+auth        sufficient    pam_unix.so nullok try_first_pass
+auth        requisite     pam_succeed_if.so uid >= 500 quiet
+auth        sufficient    pam_ldap.so use_first_pass
+auth        required      pam_deny.so
+
+account     required      pam_unix.so broken_shadow
+account     sufficient    pam_localuser.so
+account     sufficient    pam_succeed_if.so uid < 500 quiet
+account     [default=bad success=ok user_unknown=ignore] pam_ldap.so
+account     required      pam_permit.so
+
+password    requisite     pam_cracklib.so try_first_pass retry=3
+password    sufficient    pam_unix.so md5 shadow nullok try_first_pass
+use_authtok
+password    sufficient    pam_ldap.so use_authtok
+password    required      pam_deny.so
+
+session     optional      pam_keyinit.so revoke
+session     required      pam_limits.so
+session     [success=1 default=ignore] pam_succeed_if.so service in
+crond quiet use_uid
+session     required      pam_unix.so
+session     optional      pam_ldap.so
+
+Note that this config also works well for system-auth. If you want all
+authentication for your server to use ldap (graphical login, ssh, etc.),
+you can place the above into system-auth, and the define tac_plus as
+follows:
+
+auth       include      system-auth
+account    required     pam_nologin.so
+account    include      system-auth
+password   include      system-auth
+session    optional     pam_keyinit.so force revoke
+session    include      system-auth
+session    required     pam_loginuid.so
+
+3)  Configure your ldap.conf. This is where you define your ldap server,
+binddn, attribute maps, etc. Note that on RHEL5, there are two ldap.conf
+files. One is in /etc/openldap and the other is just in /etc. PAM will
+stat both files upon invocation, and the second one it stats will
+override the first. I usually modify /etc/openldap/ldap.conf, and then
+symlink /etc/ldap.conf to it.
+
+That's it. At this point, assuming you have everything setup right, you
+should be able to use your LDAP server for authentication. To
+troubleshoot, I normally run the tacacs daemon in the foreground with
+debugging on:
+
+tac_plus -C /path/to/tac_plus.conf -L -p 49 -d16 -g
+
+and then try to authenticate.
+
+So far, I have found a couple caveats that will make life very sad.
+First, if you decide to run tac_plus from xinetd in linux (which I
+suggest you do, to utilize tcp wrappers properly), then you should set
+up your /etc/xinetd.d/tacacs conf file as follows:

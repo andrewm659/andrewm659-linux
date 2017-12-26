@@ -1,0 +1,28 @@
+All tests have passed. rConfig is installed successfully.
+
+You must delete the /install/ directory from /home/rconfig/www/ after you close this page
+
+ 
+Login Credentials:-
+Default username:- admin
+Default password:- admin
+
+Before Logging into rConfig, please carry out the following actions
+
+    Login to System Shell and run 'chown -R apache /home/rconfig/'
+
+
+
+
+Please carry out the following tasks once you are logged in to rConfig
+
+    Reset admin password on the settings/users page
+    Create new users on the settings/users page
+    Add a vendor on the devices/vendors page
+    Add commands on the devices/commands page
+    Add custom properties on the devices/Custom Properties page
+    Verify and update all settings on the settings page
+    Take a system backup on the settings/system backups page
+    Add a device
+    Add a scheduled task
+

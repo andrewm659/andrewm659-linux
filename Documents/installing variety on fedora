@@ -1,0 +1,7 @@
+sudo yum install f23-backgrounds-extras-gnome f23-backgrounds-extras-kde f23-backgrounds-extras-xfce f23-backgrounds-extras-mate -y
+
+sudo wget -P /etc/yum.repos.d/ https://raw.github.com/kuboosoft/postinstallerf/master/postinstallerf.repo
+
+sudo yum install variety -y
+
+

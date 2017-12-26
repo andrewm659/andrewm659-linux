@@ -1,0 +1,82 @@
+Installing Postfix on FreeBSD
+
+1. Install postfix w/ SASL support
+pkg install postfix-sasl postfix-logwatch cyrus-sasl cyrus-sasl-gssapi cyrus-sasl-saslauthd cyrus-sasl-ldapdb gsasl p5-Authen-CyrusSASL p5-Authen-SASL p5-Authen-SASL-Cyrus p5-Authen-SASL-SASLprep
+
+2.  Configure Postfix to begin on startup and disable Sendmail
+
+# sysrc postfix_enable="YES"
+# sysrc sendmail_enable="NO"
+# sysrc saslauthd_enable="YES"
+# sysrc sendmail_submit_enable="NO"
+# sysrc sendmail_outbound_enable="NO"
+# sysrc sendmail_msp_queue_enable="NO"
+
+
+3.  Create and add postfix to periodic cleanup
+cat << EOF >> /etc/periodic.conf
+daily_clean_hoststat_enable="NO"
+daily_status_mail_rejects_enable="NO"
+daily_status_include_submit_mailq="NO"
+daily_submit_queuerun="NO"
+EOF
+
+4.  Configure postfix 
+
+# postconf -e 'inet_protocols = ipv4'
+# postconf -e 'mydomain = borg.local'
+# postconf -e 'myhostname = mta1.borg.local'
+# postconf -e 'smtpd_recipient_restrictions = permit_mynetworks, permit_sasl_authenticated, defer_unauth_destination'
+# postconf -e 'mynetworks =  10.0.0.0/8, 192.168.0.0/16, 172.16.0.0/12 127.0.0.0/8'
+# postconf -e 'relayhost = [smtp.att.yahoo.com]:587'
+# postconf -e 'debug_peer_level = 3'
+# Add this option to rewrite the email address everytime you send an email
+# postconf -e 'sender_canonical_maps = hash:/usr/local/etc/postfix/canonical'
+
+5.  Add configuration for SASL
+
+# postconf -e 'smtp_sasl_auth_enable = yes'
+# postconf -e 'smtp_sasl_password_maps = hash:/usr/local/etc/postfix/sasl_passwd'
+# postconf -e 'smtp_sasl_security_options = noanonymous'
+
+# TLS options
+# postconf -e 'smtp_use_tls = yes'
+# postconf -e 'smtp_tls_security_level = encrypt'
+# postconf -e 'tls_random_source = dev:/dev/urandom'
+# postconf -e 'smtpd_tls_loglevel = 3'
+
+6.  Create files for SASL, TLS and host rewrite, change permission, edit the files
+
+# touch /usr/local/etc/postfix/sasl_passwd
+# touch /usr/local/etc/postfix/tls_policy
+# touch /usr/local/etc/postfix/canonical
+
+# chmod 600 /usr/local/etc/postfix/sasl_passwd
+# chmod 600 /usr/local/etc/postfix/tls_policy
+# chmod 600 /usr/local/etc/postfix/canonical
+
+# vi /usr/local/etc/postfix/sasl_passwd
+
+[smtp.att.yahoo.com]:587  andrewm659@att.net:sagh0Rum
+
+
+# vi /usr/local/etc/postfix/canonical
+
+root@mta1.borg.local andrewm659@att.net
+
+#tls_policy
+# echo "att.net encrypt" > /usr/local/etc/postfix/tls_policy
+
+7.  Create teh Database files for postfix to read
+
+# postmap /usr/local/etc/postfix/sasl_passwd
+# postmap /usr/local/etc/postfix/canonical
+# postmap /usr/local/etc/postfix/tls_policy
+
+8.  Start/Stop/Restart Postfix
+
+service postfix restart
+
+9.  Test email outbound
+
+uname -a | mail -s "`uname -n`: Test mail config" andrewm659@yahoo.com && tail -f /var/log/maillog

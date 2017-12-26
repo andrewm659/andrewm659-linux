@@ -1,0 +1,79 @@
+How to Setup Sudoers Rules for FreeIPA
+https://blog.christophersmart.com/articles/freeipa-how-to-fedora/
+https://adam.younglogic.com/2012/02/dns-managers-in-freeipa/
+http://gsr-linux.blogspot.com/2011/06/sudo-with-freeipa.html
+https://blog.delouw.ch/2013/07/25/centrally-manage-sudoers-rules-with-ipa-part-i-preparation/
+https://blog-rcritten.rhcloud.com/?p=52
+https://www.freeipa.org/page/V4/Sudo_Integration
+https://mkosek.fedorapeople.org/publican_site/en-US/FreeIPA/3.4/html/FreeIPA_Guide/defining-sudorules.html
+
+
+1) Add testing users. On the server, run:
+
+ipa user-add testuser1 --first Test --last User1 
+
+ipa user-add testuser2 --first Test --last User2 
+
+2) Add the testing groups. On the server, run:
+
+ipa group-add testgroup1 --desc testgroup1 
+
+ipa group-add testgroup2 --desc testgroup2 
+
+3) Add members of the testing groups. On the server, run:
+
+ipa group-add-member testgroup1 --users testuser1 
+
+ipa group-add-member testgroup2 --users testuser2 
+
+4) Add the testing hostgroup. On the server, run:
+
+ipa hostgroup-add testhostgroup --desc "Contains client"
+
+5) Add the server to the testing hostgroup. On the server, run:
+
+ipa hostgroup-add-member testhostgroup --hosts client.ipa.test
+
+6) Now add a SUDO RULE
+
+# sudo ipa sudorule-add testrule
+
+7) Set the !authenticate option. On the server, run:
+
+$ ipa sudorule-add-option testrule --sudooption '!authenticate'
+
+8) Check the sudo permission on the client server
+See the list of the allowed commands for testuser1. On the client, run:
+
+ # su -c 'sudo -l' testuser1 
+
+See the list of the allowed commands for testuser2. On the client, run:
+
+ # su -c 'sudo -l' testuser2 
+
+Expected results
+
+    Rule was successfully modified.
+    The testuser1 can use sudo without password.
+    The testuser2 can use sudo without password.
+
+9) Restrict the testrule to the testuser1 or testgroup2. On the server, run:
+
+$ ipa sudorule-add-user testrule --users testuser1
+
+$ ipa sudorule-add-user testrule --groups testgroup2
+
+See the list of the allowed commands for testuser1. On the client, run:
+
+ # su -c 'sudo -l' testuser1 
+
+ # su -c 'sudo -l' testuser2 
+ 
+10) Restrict the testrule to the client.ipa.test host. On the server, run:
+
+$ ipa sudorule-add-host testrule --hosts client.ipa.test
+
+See the list of the allowed commands for testuser1. On the client, run:
+
+ # su -c 'sudo -l' testuser1 
+ 

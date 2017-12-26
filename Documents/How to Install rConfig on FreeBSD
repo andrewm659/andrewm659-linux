@@ -1,0 +1,31 @@
+How to Install rConfig on FreeBSD
+
+ntp sudo telnet bind-utils traceroute tree unzip vixie-cron crontabs
+openssl-devel openssl mod_ssl vsftpd mysql-client mod_auth_mysql mysql-devel
+php70w-devel php70w php70w-gd php70w-mbstring php70w-mysql php70w-pear php70w-cli php70w-common php70w-pdo
+
+
+
+VSFTPD
+
+mv /etc/vsftpd/vsftpd.conf /etc/vsftpd/vsftpd.conf.original
+                echo "#Custom rConfig VSFTPD conf file" > /etc/vsftpd/vsftpd.conf;
+                echo "anonymous_enable=NO" >> /etc/vsftpd/vsftpd.conf;
+                echo "listen=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "local_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "write_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "local_umask=022" >> /etc/vsftpd/vsftpd.conf;
+                echo "dirmessage_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "xferlog_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "connect_from_port_20=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "xferlog_std_format=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "pam_service_name=vsftpd" >> /etc/vsftpd/vsftpd.conf;
+                echo "userlist_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "tcp_wrappers=YES" >> /etc/vsftpd/vsftpd.conf;
+                echo "idle_session_timeout=600" >> /etc/vsftpd/vsftpd.conf;
+                echo "data_connection_timeout=120" >> /etc/vsftpd/vsftpd.conf;
+                echo "ftpd_banner=Welcome to the FTP Service" >> /etc/vsftpd/vsftpd.conf;
+                echo "ls_recurse_enable=YES" >> /etc/vsftpd/vsftpd.conf;
+
+
+

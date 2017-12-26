@@ -1,0 +1,176 @@
+How to Install Puppet Server with FreeIPA
+
+THIS ASSUMES THAT YOU HAVE ALREADY JOINED THE PUPPET MASTER SERVER TO THE FREEIPA DOMAIN!
+
+1) Install the Puppet Repository
+
+To install the puppet master/agent, we would require adding a puppet repository on the all the nodes. Get the PupperLabs repository rpm and install it.
+
+# sudo yum https://yum.puppetlabs.com/puppet5/puppet5-release-el-7.noarch.rpm
+
+2) Install Puppet Server
+
+Puppet Server is the server software that runs on the puppet master node. Puppetmaster pushes the configurations to managed nodes (puppet-agent).
+
+Install the Puppet server using below command.
+
+# sudo yum install -y puppetserver
+
+Puppet server is now installed, do not start the puppet server service yet.
+
+3) Configure Puppet Server
+Memory Allocation (Optional)
+
+By default, Puppet Server JVM is configured to use 2GB of memory. You can change it, depends on how much memory available on your master node; ensure that it is enough for managing all the nodes connected to it.
+
+To change the value of memory allocation, edit the below file.
+
+# sudo vi /etc/sysconfig/puppetserver
+
+Change the value shown like below.
+
+From:
+
+JAVA_ARGS="-Xms2g -Xmx2g
+
+To:
+
+For 512MB, use below settings.
+
+JAVA_ARGS="-Xms512m -Xmx512m"
+
+4) Start Puppet Server
+
+Puppet Master does not require any configuration; you can simply start the puppetserver service. It will use the default settings.
+The default Puppet master hostname is “puppet”, so you need to use server = puppet in the puppet-agent configuration file.
+
+For. ex: dns_alt_names (puppet, <hostname of the server>).
+
+If you want to change puppet master hostname, follow the below procedure.
+Advanced Configurations (optional)
+
+Here, I am going to modify the Puppet Master settings for our requirement.
+
+# sudo vi /etc/puppetlabs/puppet/puppet.conf
+
+Place the below lines. Modify it according to your environment.
+
+[master]
+dns_alt_names = server.itzgeek.local,server
+[main]
+certname = asm-automation01.mgt.asm.borg.local
+server = asm-automation01.mgt.asm.borg.local
+environment = production
+runinterval = 1h
+
+5) Start and enable the Puppet Server.
+
+# sudo systemctl enable puppetserver
+
+Firewall
+
+The Puppet Master listens on port 8140, so configure the firewall in such way that managed nodes can connect to the master.
+
+# sudo firewall-cmd --permanent --zone=public --add-port=8140/tcp
+# sudo firewall-cmd --reload
+
+6) On the IPA Server, or if one of the clients has freeipa-admintools installed:
+
+# create the puppet master service
+# kinit admin
+$ ipa service-add puppetmaster/puppetmaster.example.com
+
+7) Install additional requirements
+
+# sudo yum install -y mod_nss mod_passenger
+
+8) Setting up the certificates:
+
+# now grab the certs for the master
+$ ipa-getcert request -K puppetmaster/asm-automation01.mgt.asm.borg.local -d /etc/httpd/alias -n puppetmaster/asm-automation01.mgt.asm.borg.local
+
+Create the folder 
+# sudo mkdir -pv /var/lib/puppet/ssl/certs
+
+# identify where to put the publicprivate, and CA pem files for host:
+$ puppet master --configprint hostcert /var/lib/puppet/ssl/certs/asm-automation01.mgt.asm.borg.local.pem
+$ puppet master --configprint hostprivkey /var/lib/puppet/ssl/private_keys/asm-automation01.mgt.asm.borg.local.pem
+$ puppet master --configprint localcacert /var/lib/puppet/ssl/certs/ca.pem       
+
+STOPPED HERE
+# you may need to create the above directories      
+# grab the public key for host and place it in the appropriate directory
+$ certutil -L -d /etc/pki/nssdb -a -n "IPA Machine Certificate - asm-automation01.mgt.asm.borg.local" > /var/lib/puppet/ssl/certs/asm-automation01.mgt.asm.borg.local
+
+# if there's an error about the directory, set SELinux to permissive for the
+# certutil commands, then you can return it to enforce.
+# grab the private key for host and place it in the appropriate directory
+# if/when prompted for a password, this is the same admin password that you used to setup IPA
+$ certutil -K -d /etc/pki/nssdb -a
+$ pk12util -o keys.p12 -n "IPA Machine Certificate - asm-automation01.mgt.asm.borg.local" -d /etc/pki/nssdb
+$ openssl pkcs12 -in keys.p12 -out /var/lib/puppet/ssl/private_keys/asm-automation01.mgt.asm.borg.local.pem -nodes
+
+# export IPA's CA in the localcacert directory
+$ certutil -L -d /etc/pki/nssdb -a -n "IPA CA" > /var/lib/puppet/ssl/certs/ca.pem
+
+9) Setup the master configuration in /etc/puppet/puppet.conf by adding:
+
+[master]
+    ca = false
+    certificate_revocation = false
+    certname = 'asm-automation01.mgt.asm.borg.local'
+
+10) Setup NSS in /etc/httpd/conf.d/nss.conf:
+
+LoadModule          nss_module modules/libmodnss.so
+AddType             application/x-x509-ca-cert .crt
+AddType             application/x-pkcs7-crl    .crl
+NSSPassPhraseDialog     builtin
+NSSPassPhraseHelper     /usr/sbin/nss_pcache
+NSSSessionCacheSize     10000
+NSSSessionCacheTimeout      100
+NSSSession3CacheTimeout     86400
+NSSRandomSeed           startup builtin
+NSSRenegotiation        off
+NSSRequireSafeNegotiation   off
+
+Listen 8140
+<VirtualHost _default_:8140>
+    ServerName  asm-automation01.mgt.asm.borg.local
+    ServerAdmin puppetmaster@asm-automation01.mgt.asm.borg.local
+
+    NSSEngine           on
+    NSSCertificateDatabase  /etc/httpd/alias
+    NSSNickname         "puppetmaster/asm-automation01.mgt.asm.borg.local"
+    NSSOptions          +StdEnvVars
+    NSSEnforceValidCerts        on
+    NSSVerifyClient         require
+    NSSProtocol         SSLv3,TLSv1
+    NSSCipherSuite          +rsa_rc4_128_md5,+rsa_rc4_128_sha,+rsa_3des_sha,-rsa_des_sha,-rsa_rc4_40_md5,-rsa_rc2_40_md5,-rsa_null_md5,-rsa_null_sha,+fips_3des_sha,-fips_des_sha,-fortezza,-fortezza_rc4_128_sha,-fortezza_null,-rsa_des_56_sha,-rsa_rc4_56_sha,+rsa_aes_128_sha,+rsa_aes_256_sha
+
+    RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e
+    RequestHeader set X-Client-DN "/CN=%{SSL_CLIENT_S_DN_CN}e"
+    RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
+
+    PassengerHighPerformance    on
+    PassengerStatThrottleRate   120
+    PassengerUseGlobalQueue     on
+
+    RackAutoDetect  off
+    RailsAutoDetect off
+    RackBaseURI /
+
+    DocumentRoot    /var/www/puppet/public
+    <Directory /var/www/puppet>
+        Options     None
+        AllowOverride   None
+        Order       allow,deny
+        Allow       from all
+    </Directory>
+</VirtualHost>
+
+11) Open up ports for puppet and restart Apache:
+
+# sudo firewall-cmd --add-port=8140/tcp
+# sudo systemctl restart httpd
+# sudo systemctl status httpd -l

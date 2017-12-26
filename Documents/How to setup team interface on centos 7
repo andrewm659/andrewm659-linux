@@ -1,0 +1,39 @@
+http://vinzlinux.blogspot.in/2014/12/configuring-network-teaming-using-nmcli.html
+
+
+3.  Check the current state of nmcli and record the output
+nmcli con show 
+
+4.  Create the teamed interface as a Active/Backup connection
+nmcli con add type team con-name team0 ifname team0 config '{"runner": {"name": "activebackup"}}'
+
+5.  Check your output 
+nmcli con show 
+
+6.  Add a interface as a slave to the team
+nmcli con add type team-slave ifname enp0s3 con-name team0-enp0s3 master team0
+nmcli con add type team-slave ifname enp0s8 con-name team0-enp0s8 master team0
+
+7.  Check output again
+nmcli con show 
+
+8.  Apply a static IP address to the team interface
+nmcli con mod team0 ipv4.addresses "10.0.2.60/24" ipv4.gateway "10.0.2.2" ipv4.dns "10.150.1.60" ipv4.dns-search "borg.local" ipv4.method manual
+
+9.  Bring up the Slave Interfaces
+nmcli con up team0-enp0s3
+
+nmcli con up team0-enp0s8
+
+10.  Bring up the teamed interface
+nmcli con up team0
+
+11.  Check the state of the teamed device
+teamdctl team0 state
+
+12.  Get interface configuration
+ip link (or ifconfig)
+
+ip addr
+
+

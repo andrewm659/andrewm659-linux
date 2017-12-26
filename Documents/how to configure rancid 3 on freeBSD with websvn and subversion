@@ -1,0 +1,209 @@
+https://nsrc.org/workshops/2014/nsrc-tein-ait/raw-attachment/wiki/Agenda/rancid-exercise.htm#critical-critical-critical
+http://blog.skufel.net/2012/03/how-to-using-websvn-as-rancid-repository-access-tool/
+
+CAUTION PLEASE MAKE SURE YOU GO THROUGH STEP BY STEP OR IT WILL RESULT IN NOT COMPILING
+
+
+Server list: 
+« LIST OF SERVERS TO BE UPDATED »
+Console ports:
+« LIST OF CONSOLE PORTS »
+« If these are Virtual Machines, include the path to the virtual console in vSphere. »
+Connect to the console and verify that the root password in https://password.savvis.net/ valid.
+*** Test these ahead of time. Replace this line with a note indicating password validity. ***
+
+A. Set Activity Status to "Maintenance Begin."
+B. Notify Hosting Edge Management that maintenance is beginning.
+C. Contact the customer.
+# replace this step with information about contacting the customer prior to
+# update. This may also include conference bridge info.
+#--- UNIX MOP ---#
+« For each server in the list perform the following. »
+« sshadmin to server, become root, and run the following: »
+
+1.   Collect pre VMAC information (this only works for bash)
+# export VMAC=XXXXXX
+# mkdir /var/tmp/PRE-$VMAC
+# cp /etc/grub.conf /var/tmp/PRE-$VMAC/grub.conf-$(date +%Y%m%d)
+# /sbin/ifconfig -a | tee /var/tmp/PRE-$VMAC/ifconfig-$(date +%Y%m%d)
+# mount | tee /var/tmp/PRE-$VMAC/mount-$(date +%Y%m%d)
+# cat /etc/fstab | tee /var/tmp/PRE-$VMAC/fstab-$(date +%Y%m%d)
+# route -n | tee /var/tmp/PRE-$VMAC/route-$(date +%Y%m%d)
+# cat /etc/sysconfig/network-scripts/route-eth0 | tee /var/tmp/PRE-$VMAC/route-eth0-$(date +%Y%m%d)
+# ps auxwf | tee /var/tmp/PRE-$VMAC/ps-$(date +%Y%m%d)
+# /etc/init.d/monitor status | tee /var/tmp/PRE-$VMAC/monitor-$(date +%Y%m%d)
+# cat /etc/redhat-release | tee /var/tmp/PRE-$VMAC/redhat-release-$(date +%Y%m%d)
+# uname -a | tee /var/tmp/PRE-$VMAC/uname-$(date +%Y%m%d)
+# df -h | tee /var/tmp/PRE-$VMAC/df-$(date +%Y%m%d)
+# netstat -an | tee /var/tmp/PRE-$VMAC/netstat-$(date +%Y%m%d)
+# chkconfig --list | tee /var/tmp/PRE-$VMAC/chkconfig-$(date +%Y%m%d)
+
+2.  As ROOT Install the following packages prior to doing anything
+pkg install sudo bash dash zsh vim pdksh mksh ksh93 postfix
+
+3.  Add the users to wheel group
+pw usermod username -G wheel
+
+4.  Edit the sudoers file and uncomment the wheel group with no passwd
+visudo
+
+## Same thing without a password
+# %wheel ALL=(ALL) NOPASSWD: ALL
+
+5.  Reboot
+
+6.  Edit the /etc/aliases file and add the following
+vim /etc/aliases
+
+Shift+G to go to the bottom
+
+i to insert
+
+rancid-NetworkDevices: rancid@tsg2.com
+rancid-admin-NetworkDevices: rancid@tsg2.com
+
+Esc
+:wq
+
+7.  Make sure the system knows about the new email aliases.  Run this as root
+newaliases
+
+8. Configure postfix and Test sending an email and make sure it arrived at its destination
+postconf -e 'relayhost = mta.borg.local'
+echo 'postfix_enable="YES"' >> /etc/rc.conf
+echo 'sendmail_enable="NO"' >> /etc/rc.conf
+service postfix start
+
+uname -a | mail -s "`uname -n`: Test mail config"  user@email.com && tail -f /var/log/maillog
+
+9.  Install Rancid
+pkg install rancid3
+
+10.  After installation it should have created all the config files for you, so you will need to edit the main one and create a new group (if its not there you will need to copy it using the following)
+
+sudo cp -p /usr/local/etc/rancid/rancid.conf.sample /usr/local/etc/rancid/rancid.conf
+
+sudo vim /usr/local/etc/rancid/rancid.conf
+
+Find the line that says #LIST_OF_GROUPS= and uncomment it.  Inside the quotes erase what is there and give it a group name called NetworkDevices - NO SPACES
+
+a.  Change the directory structure on the CVSROOT line from CVS to SVN:
+# Location of the CVS/SVN repository. Be careful changing this.
+
+CVSROOT=$BASEDIR/SVN; export CVSROOT
+
+
+b.  Change the RCS (Revision Control System) repo from using CVS to Subversion (SVN)
+this after CVSROOT has been created with rancid-cvs.  Changing between these
+# requires manual conversions.
+RCSSYS=svn; export RCSSYS
+
+11.  Next you will need to switch to the rancid user and create a .cloginrc file inside the home directory for rancid.  This will store the username and password to log in to all network devices
+su - rancid
+touch /usr/local/var/rancid/.cloginrc
+chmod 600 .cloginrc
+
+12.  Edit the file you just created AS the USER RANCID
+vim .cloginrc
+
+Hit i to insert
+add the following lines
+
+add sshcmd 97.91.159.108 {ssh\ -1}
+add user 97.91.159.108 ppmrtr
+add password 97.91.159.108 F3rengi F3rengi
+add password 97.91.191.97 Ranc1d Ranc1d
+add password 10.20.30.1 Ranc1d Ranc1d
+add sshcmd 10.20.30.1 {ssh\ -1}
+add sshcmd 97.91.191.97 {ssh\ -1}
+add autoenable 192.168.220.8
+add method 192.168.220.9 telnet
+add sshcmd 192.168.220.254 {ssh\ -1}
+add user * rancid
+add password * rancid
+add method * ssh
+----------------------------------------------------------------------------------------------
+To connect to devices that only use ssh version use the following command
+add sshcmd 1.2.3.4 {ssh\ -1}
+----------------------------------------------------------------------------------------------
+Write and save
+Esc
+:x!
+or
+:wq!
+
+13.  Next we are going to populate the folders
+
+/usr/local/bin/rancid-cvs
+
+14.  Next change directories to the new group new name.  In this case NetworkDevices AS the user rancid
+
+cd NetworkDevices
+
+15. After running rancid-cvs there should be a router.db file in there.  Edit this file and add the following information.  If you have other devices such as juniper, the device type would change based on brand.
+
+vim /usr/local/var/rancid/NetworkDevices/router.db
+
+i for insert
+
+192.168.220.1;cisco;up
+10.150.1.1;cisco;up
+
+Esc
+:wq
+
+17.  Next we are going to check to make sure we can login to the devices.
+
+clogin -s -c"show run;show ver" 10.150.1.1
+
+/usr/local/libexec/rancid/clogin -t 120 -c "show run" 10.150.1.1
+
+18.  Next we are going to add crontab entries so that it constantly checks for updates.
+su - rancid
+crontab -e
+
+*/10 * * * * /usr/local/bin/rancid-run #hourly router dump
+50 23 * * * /usr/local/var/rancid/logs/ -type f –mtime +2 -exec rm -rf {} \;
+OR
+#/usr/local/var/rancid/logs/NetworkDevices/
+
+19.  To test rancid outside of cron
+
+/usr/local/bin/rancid-run
+
+20.  Install WebSVN
+
+pkg install php56 websvn apache24 mod_dav_svn mod_php56 enscript-letter-1.6.6_1 nenscript-1.13.3 subversion
+
+21.  Edit /usr/local/etc/apache24/modules.d/220_subversion.conf
+
+sudo vim /usr/local/etc/apache24/modules.d/220_subversion.conf
+Uncomment the following lines:
+
+echo 'LoadModule dav_svn_module     libexec/apache24/mod_dav_svn.so' >> /usr/local/etc/apache24/modules.d/220_subversion.conf
+echo 'LoadModule authz_svn_module   libexec/apache24/mod_authz_svn.so' >> /usr/local/etc/apache24/modules.d/220_subversion.conf
+
+22.  Edit /usr/local/etc/apache24/httpd.conf
+vim /usr/local/etc/apache24/httpd.conf
+
+Uncomment the following lines:
+LoadModule dav_module libexec/apache24/mod_dav.so
+  
+23.  Refer to:
+How to Install and Configure WebSVN on FreeBSD 10x for use with RANCID in a Jail
+
+
+
+#--- END UNIX MOP ---#
+D. Notify the customer that maintenance is complete.
+E. Notify Hosting Edge Management that maintenance is complete.
+F. Set Activity Status to "Maintenance Complete" as appropriate, and note accordingly.
+
+Setup Logrotate  (do not implement this - still experimental)
+vim /etc/newsyslog.conf
+
+/usr/local/var/rancid/logs/NetworkDevices*              640 7  *        @T00  GJ
+
+
+clogin -t 120 -ssh(1)
+
